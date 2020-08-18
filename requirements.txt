@@ -1,4 +1,8 @@
 flask
 redis
 flask-restful
-psycopg2
+flask-cors
+python-dotenv
+flask_socketio
+simplejson
+# psycopg2
