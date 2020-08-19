@@ -5,4 +5,4 @@ flask-cors
 python-dotenv
 flask_socketio
 simplejson
-# psycopg2
+psycopg2

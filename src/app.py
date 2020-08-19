@@ -7,10 +7,15 @@ import redis
 import os
 import threading
 import simplejson as json
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 import settings
 
+
 load_dotenv()
+
+
 
 r = redis.Redis(host=os.getenv('REDIS_SERVER'), port=os.getenv('REDIS_PORT'), db=0)
 p = r.pubsub(ignore_subscribe_messages=True)
@@ -23,6 +28,63 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 @socketio.on('')
 def send_data(data):
   socketio.emit('data', json.loads(data))
+
+class Database:
+    def __init__(self):
+        #ensure only one connectionj
+        self.conn = None
+
+    # connect to SQL DB, or do nothing if already connected
+    def connect(self):
+        if self.conn is None:
+            try:
+                self.conn = psycopg2.connect(
+                                 user = os.environ.get('SQL_USER'),
+                                 password = os.environ.get('SQL_PASS'),
+                                 host = os.environ.get('SQL_IP'),
+                                 port = os.environ.get('SQL_PORT'),
+                                 database = os.environ.get('SQL_DB'))
+
+                print("DB connection established")
+            except:
+                print("Could not connect to PSQL DB")
+                return 0
+            finally:
+                return 1
+        else:
+            print('DB connection already established')
+            return 1
+
+
+    # View available controllers
+    def viewControllers(self):
+        self.connect()
+        if self.conn is None:
+            pass
+        else:
+            cursor = self.conn.cursor(cursor_factory=RealDictCursor)
+            cursor.callproc('"Device".view_availablecontrollers')
+            result = json.dumps(cursor.fetchall())
+            cursor.close()
+            return result
+
+
+    # Log controller action
+    def logControllerAction(self, CurrentDeviceID, Action):
+        self.connect()
+        if self.conn is None:
+            pass
+        else:
+            with self.conn, self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.callproc('"Device"."Insert_DeviceAction"',[CurrentDeviceID, Action,])
+                result=cursor.fetchone()
+
+            if result == 1:
+                return 200
+            else:
+                return 503
+
+
 
 class Command(Resource):
   def post(self):
