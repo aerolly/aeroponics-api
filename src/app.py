@@ -7,10 +7,15 @@ import redis
 import os
 import threading
 import simplejson as json
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 import settings
 
+
 load_dotenv()
+
+
 
 r = redis.Redis(host=os.getenv('REDIS_SERVER'), port=os.getenv('REDIS_PORT'), db=0)
 p = r.pubsub(ignore_subscribe_messages=True)
@@ -23,6 +28,36 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 @socketio.on('')
 def send_data(data):
   socketio.emit('data', json.loads(data))
+
+class Database:
+    def __init__(self):
+        #ensure only one connectionj
+        self.conn = None
+
+    def connect(self):
+        # Try to connect to SQL DB
+        if self.conn is None:
+            try:
+                self.conn = psycopg2.connect(
+                                 user = os.environ.get('SQL_USER'),
+                                 password = os.environ.get('SQL_PASS'),
+                                 host = os.environ.get('SQL_IP'),
+                                 port = os.environ.get('SQL_PORT'),
+                                 database = os.environ.get('SQL_DB'))
+
+                print("DB connection established")
+            except:
+                print("Could not connect to PSQL DB")
+        else:
+            print('DB connection already established')
+
+    def viewControllers(self):
+        self.connect()
+        cursor = self.conn.cursor(cursor_factory=RealDictCursor)
+        cursor.callproc('Device.view_availablecontrollers')
+        print(json.dumps(cur.fetchall(), indent=2))
+        cursor.close()
+
 
 class Command(Resource):
   def post(self):
