@@ -65,7 +65,6 @@ class Database:
             cursor = self.conn.cursor(cursor_factory=RealDictCursor)
             cursor.callproc('"Device".view_availablecontrollers')
             result = json.dumps(cursor.fetchall())
-            print(result)
             cursor.close()
             return result
 
