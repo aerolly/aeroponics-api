@@ -29,6 +29,11 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 def send_data(data):
   socketio.emit('data', json.loads(data))
 
+
+############################################################################
+# DB Stuff
+############################################################################
+
 class Database:
     def __init__(self):
         #ensure only one connectionj
@@ -48,13 +53,13 @@ class Database:
                 print("DB connection established")
             except:
                 print("Could not connect to PSQL DB")
-                return 0
-            finally:
-                return 1
         else:
             print('DB connection already established')
-            return 1
 
+
+#########################################################################
+# View functions
+#########################################################################
 
     # View available controllers
     def viewControllers(self):
@@ -69,6 +74,23 @@ class Database:
             return result
 
 
+    # View sensors
+    def viewSensors(self)
+    self.connect()
+    if self.conn is None:
+        pass
+    else:
+        cursor = self.conn.cursor(cursor_factory=RealDictCursor)
+        cursor.callproc('"Device".view_availablesensors')
+        result = json.dumps(cursor.fetchall())
+        cursor.close()
+        return result
+
+
+#########################################################################
+# Logging functions
+#########################################################################
+
     # Log controller action
     def logControllerAction(self, CurrentDeviceID, Action):
         self.connect()
@@ -82,6 +104,8 @@ class Database:
         # Return status and error message
         return result
 
+
+############################################################################
 
 
 
