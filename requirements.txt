@@ -5,4 +5,5 @@ flask-cors
 python-dotenv
 flask_socketio
 simplejson
+wheel
 psycopg2
