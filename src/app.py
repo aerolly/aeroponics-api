@@ -77,12 +77,11 @@ class Database:
         else:
             with self.conn, self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
                 cursor.callproc('"Device"."Insert_DeviceAction"',[CurrentDeviceID, Action,])
-                result=cursor.fetchone()
+                result=json.dumps(cursor.fetchall())
 
-            if result == 1:
-                return 200
-            else:
-                return 503
+        # Return status and error message
+        return result
+
 
 
 
