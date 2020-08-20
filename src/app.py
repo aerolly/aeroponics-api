@@ -83,7 +83,7 @@ class System(Resource):
 
       try: 
         initialState[key.decode('utf-8')] = int(value)
-      except ValueError as err:
+      except ValueError:
         initialState[key.decode('utf-8')] = value
 
     return initialState
@@ -93,7 +93,7 @@ class System(Resource):
 
     try: 
       val = int(data['value'])
-    except ValueError as err:
+    except ValueError:
       val = data['value']
 
     send_data(json.dumps({
@@ -128,6 +128,6 @@ if __name__ == '__main__':
 
     redisData.start()
 
-    socketio.run(app, debug=True)
+    socketio.run(app, host='0.0.0.0', debug=True)
 
     redisData.join()
