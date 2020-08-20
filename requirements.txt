@@ -6,4 +6,4 @@ python-dotenv
 flask_socketio
 simplejson
 wheel
-psycopg2
+psycopg2-binary
