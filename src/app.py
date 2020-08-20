@@ -38,32 +38,29 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 def send_data(data):
   socketio.emit('data', json.loads(data))
 
+############################################################
+# DB Query Functions
+############################################################
+
+# General DB View function
+def getResultSetFromDB(funcName, params):
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.callproc(funcName, params)
+        result = json.dumps(cursor.fetchall())
+        cursor.close()
+        return result
 
 
-class Controller(Resource):
-
-    # View available controllers
-    def get(self):
-            cursor = conn.cursor(cursor_factory=RealDictCursor)
-            cursor.callproc('"Device".view_availablecontrollers')
-            result = json.dumps(cursor.fetchall())
-            cursor.close()
-            return result
-
-
-# Log controller action
-def logControllerAction(self, CurrentDeviceID, Action):
-    self.connect()
-    if self.conn is None:
-        pass
-    else:
-        with self.conn, self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.callproc('"Device"."Insert_DeviceAction"',[CurrentDeviceID, Action,])
-            result=json.dumps(cursor.fetchall())
+# Modify function
+def modifyDB(funcName, params):
+    with conn, conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        cursor.callproc(funcName, params)
+        result=json.dumps(cursor.fetchall())
 
     # Return status and error message
     return result
 
+#############################################################
 
 
 
@@ -105,7 +102,6 @@ class System(Resource):
 
 api.add_resource(Command, '/command')
 api.add_resource(System, '/system')
-api.add_resource(Controller, '/controller')
 
 def handleRedisData():
   try:
