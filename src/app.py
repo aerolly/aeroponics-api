@@ -20,6 +20,15 @@ load_dotenv()
 r = redis.Redis(host=os.getenv('REDIS_SERVER'), port=os.getenv('REDIS_PORT'), db=0)
 p = r.pubsub(ignore_subscribe_messages=True)
 
+
+conn = psycopg2.connect(
+         user = os.environ.get('SQL_USER'),
+         password = os.environ.get('SQL_PASS'),
+         host = os.environ.get('SQL_IP'),
+         port = os.environ.get('SQL_PORT'),
+         database = os.environ.get('SQL_DB'))
+
+
 app = Flask(__name__)
 api = Api(app)
 CORS(app)
@@ -30,82 +39,32 @@ def send_data(data):
   socketio.emit('data', json.loads(data))
 
 
-############################################################################
-# DB Stuff
-############################################################################
 
-class Database:
-    def __init__(self):
-        #ensure only one connectionj
-        self.conn = None
-
-    # connect to SQL DB, or do nothing if already connected
-    def connect(self):
-        if self.conn is None:
-            try:
-                self.conn = psycopg2.connect(
-                                 user = os.environ.get('SQL_USER'),
-                                 password = os.environ.get('SQL_PASS'),
-                                 host = os.environ.get('SQL_IP'),
-                                 port = os.environ.get('SQL_PORT'),
-                                 database = os.environ.get('SQL_DB'))
-
-                print("DB connection established")
-            except:
-                print("Could not connect to PSQL DB")
-        else:
-            print('DB connection already established')
-
-
-#########################################################################
-# View functions
-#########################################################################
+class Controller(Resource):
 
     # View available controllers
-    def viewControllers(self):
-        self.connect()
-        if self.conn is None:
-            pass
-        else:
-            cursor = self.conn.cursor(cursor_factory=RealDictCursor)
+    def get(self):
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             cursor.callproc('"Device".view_availablecontrollers')
             result = json.dumps(cursor.fetchall())
             cursor.close()
             return result
 
 
-    # View sensors
-    def viewSensors(self)
+# Log controller action
+def logControllerAction(self, CurrentDeviceID, Action):
     self.connect()
     if self.conn is None:
         pass
     else:
-        cursor = self.conn.cursor(cursor_factory=RealDictCursor)
-        cursor.callproc('"Device".view_availablesensors')
-        result = json.dumps(cursor.fetchall())
-        cursor.close()
-        return result
+        with self.conn, self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.callproc('"Device"."Insert_DeviceAction"',[CurrentDeviceID, Action,])
+            result=json.dumps(cursor.fetchall())
+
+    # Return status and error message
+    return result
 
 
-#########################################################################
-# Logging functions
-#########################################################################
-
-    # Log controller action
-    def logControllerAction(self, CurrentDeviceID, Action):
-        self.connect()
-        if self.conn is None:
-            pass
-        else:
-            with self.conn, self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
-                cursor.callproc('"Device"."Insert_DeviceAction"',[CurrentDeviceID, Action,])
-                result=json.dumps(cursor.fetchall())
-
-        # Return status and error message
-        return result
-
-
-############################################################################
 
 
 
@@ -146,6 +105,7 @@ class System(Resource):
 
 api.add_resource(Command, '/command')
 api.add_resource(System, '/system')
+api.add_resource(Controller, '/controller')
 
 def handleRedisData():
   try:
