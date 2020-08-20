@@ -8,6 +8,7 @@ import os
 import threading
 import simplejson as json
 import psycopg2
+import time
 from psycopg2.extras import RealDictCursor
 
 import settings
@@ -62,8 +63,9 @@ def modifyDB(funcName, params):
 
 #############################################################
 
-
-
+class Controller(Resource):
+  def get(self):
+    return getResultSetFromDB('"Device".view_availablecontrollers' , [])
 
 class Command(Resource):
   def post(self):
@@ -100,6 +102,7 @@ class System(Resource):
     }))
     return 200
 
+api.add_resource(Controller, '/controller')
 api.add_resource(Command, '/command')
 api.add_resource(System, '/system')
 
