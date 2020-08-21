@@ -18,7 +18,7 @@ load_dotenv()
 
 
 
-r = redis.Redis(host=os.getenv('REDIS_SERVER'), port=os.getenv('REDIS_PORT'), db=0)
+r = redis.Redis(host=os.getenv('REDIS_IP'), port=os.getenv('REDIS_PORT'), db=0)
 p = r.pubsub(ignore_subscribe_messages=True)
 
 
@@ -32,7 +32,7 @@ conn = psycopg2.connect(
 
 app = Flask(__name__)
 api = Api(app)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 socketio = SocketIO(app, cors_allowed_origins='*')
 
 @socketio.on('')
