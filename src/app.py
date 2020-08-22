@@ -143,7 +143,7 @@ def handleRedisData():
 
         payload = json.loads(msg)
 
-        r.set(payload.key, payload.result)
+        r.set(payload['key'], payload['result'])
 
         send_data(msg)
       except UnicodeError:
