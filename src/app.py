@@ -63,6 +63,10 @@ def modifyDB(funcName, params):
 
 #############################################################
 
+class Sensor(Resource):
+  def get(self):
+    return getResultSetFromDB('"Device".view_availablesensors' , [])
+
 class Controller(Resource):
   def get(self):
     return getResultSetFromDB('"Device".view_availablecontrollers' , [])
@@ -102,6 +106,7 @@ class System(Resource):
     }))
     return 200
 
+api.add_resource(Sensor, '/sensor')
 api.add_resource(Controller, '/controller')
 api.add_resource(Command, '/command')
 api.add_resource(System, '/system')
@@ -117,6 +122,10 @@ def handleRedisData():
       try:
         msg = message['data'].decode('utf-8')
         print('Received event.', msg)
+
+        payload = json.loads(msg)
+
+        r.set(payload.key, payload.result)
 
         send_data(msg)
       except UnicodeError:
