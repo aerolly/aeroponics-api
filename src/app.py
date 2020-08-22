@@ -51,9 +51,9 @@ def send_data(data):
 # Utility function to parse number if possible
 def parseNumber(number):
   try:
-    return float(value)
+    return float(number)
   except ValueError as error:
-    return value
+    return number
 
 ############################################################
 # DB Query Functions
