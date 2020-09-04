@@ -3,7 +3,7 @@ import os
 import simplejson as json
 import time
 import threading
-import scheduler
+import sched as scheduler
 import time
 
 import settings
