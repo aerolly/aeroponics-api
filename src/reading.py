@@ -3,7 +3,7 @@ import os
 import simplejson as json
 import time
 import threading
-import sched as scheduler
+import schedule
 import time
 
 import settings
@@ -76,25 +76,25 @@ def pump():
       }
     }))
 
-scheduler.every().day.at("11:00").do(pump)
+schedule.every().day.at("11:00").do(pump)
 
-scheduler.every().day.at("7:35").do(sprayLower)
-scheduler.every().day.at("8:35").do(sprayLower)
-scheduler.every().day.at("9:35").do(sprayLower)
-scheduler.every().day.at("10:35").do(sprayLower)
-scheduler.every().day.at("12:35").do(sprayLower)
-scheduler.every().day.at("13:35").do(sprayLower)
-scheduler.every().day.at("15:35").do(sprayLower)
-scheduler.every().day.at("17:35").do(sprayLower)
+schedule.every().day.at("7:35").do(sprayLower)
+schedule.every().day.at("8:35").do(sprayLower)
+schedule.every().day.at("9:35").do(sprayLower)
+schedule.every().day.at("10:35").do(sprayLower)
+schedule.every().day.at("12:35").do(sprayLower)
+schedule.every().day.at("13:35").do(sprayLower)
+schedule.every().day.at("15:35").do(sprayLower)
+schedule.every().day.at("17:35").do(sprayLower)
 
-scheduler.every().day.at("7:30").do(sprayUpper)
-scheduler.every().day.at("8:30").do(sprayUpper)
-scheduler.every().day.at("9:30").do(sprayUpper)
-scheduler.every().day.at("10:30").do(sprayUpper)
-scheduler.every().day.at("12:30").do(sprayUpper)
-scheduler.every().day.at("13:30").do(sprayUpper)
-scheduler.every().day.at("15:30").do(sprayUpper)
-scheduler.every().day.at("17:30").do(sprayUpper)
+schedule.every().day.at("7:30").do(sprayUpper)
+schedule.every().day.at("8:30").do(sprayUpper)
+schedule.every().day.at("9:30").do(sprayUpper)
+schedule.every().day.at("10:30").do(sprayUpper)
+schedule.every().day.at("12:30").do(sprayUpper)
+schedule.every().day.at("13:30").do(sprayUpper)
+schedule.every().day.at("15:30").do(sprayUpper)
+schedule.every().day.at("17:30").do(sprayUpper)
 
 def takeData():
   temp = json.dumps({
@@ -118,7 +118,7 @@ def takeData():
 
 def schedule():
   while True:
-    scheduler.run_pending()
+    schedule.run_pending()
     time.sleep(1)
 
 if __name__ == '__main__':
