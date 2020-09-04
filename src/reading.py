@@ -2,7 +2,7 @@ import redis
 import os
 import simplejson as json
 import time
-import thread
+import threading
 import scheduler
 import time
 
