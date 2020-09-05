@@ -22,7 +22,7 @@ def sprayLower():
       }
     }))
 
-    time.sleep(5)
+    time.sleep(3)
 
     r.publish('scheduler', json.dumps({
       'command': 'controller',
@@ -44,7 +44,7 @@ def sprayUpper():
       }
     }))
 
-    time.sleep(5)
+    time.sleep(3)
 
     r.publish('scheduler', json.dumps({
       'command': 'controller',
@@ -79,22 +79,36 @@ def pump():
 schedule.every().day.at("12:00").do(pump)
 
 schedule.every().day.at("07:35").do(sprayLower)
+schedule.every().day.at("08:05").do(sprayLower)
 schedule.every().day.at("08:35").do(sprayLower)
+schedule.every().day.at("09:05").do(sprayLower)
 schedule.every().day.at("09:35").do(sprayLower)
+schedule.every().day.at("10:05").do(sprayLower)
+schedule.every().day.at("10:35").do(sprayLower)
+schedule.every().day.at("11:05").do(sprayLower)
 schedule.every().day.at("11:35").do(sprayLower)
+schedule.every().day.at("12:05").do(sprayLower)
 schedule.every().day.at("12:35").do(sprayLower)
+schedule.every().day.at("13:05").do(sprayLower)
 schedule.every().day.at("13:35").do(sprayLower)
 schedule.every().day.at("15:35").do(sprayLower)
 schedule.every().day.at("17:35").do(sprayLower)
 
-schedule.every().day.at("07:30").do(sprayUpper)
-schedule.every().day.at("08:30").do(sprayUpper)
-schedule.every().day.at("09:30").do(sprayUpper)
-schedule.every().day.at("11:30").do(sprayUpper)
-schedule.every().day.at("12:30").do(sprayUpper)
-schedule.every().day.at("13:30").do(sprayUpper)
-schedule.every().day.at("15:30").do(sprayUpper)
-schedule.every().day.at("17:30").do(sprayUpper)
+schedule.every().day.at("07:30").do(sprayLower)
+schedule.every().day.at("08:00").do(sprayLower)
+schedule.every().day.at("08:30").do(sprayLower)
+schedule.every().day.at("09:00").do(sprayLower)
+schedule.every().day.at("09:30").do(sprayLower)
+schedule.every().day.at("10:00").do(sprayLower)
+schedule.every().day.at("10:30").do(sprayLower)
+schedule.every().day.at("11:00").do(sprayLower)
+schedule.every().day.at("11:30").do(sprayLower)
+schedule.every().day.at("12:00").do(sprayLower)
+schedule.every().day.at("12:30").do(sprayLower)
+schedule.every().day.at("13:00").do(sprayLower)
+schedule.every().day.at("13:30").do(sprayLower)
+schedule.every().day.at("15:30").do(sprayLower)
+schedule.every().day.at("17:30").do(sprayLower)
 
 def takeData():
   temp = json.dumps({
