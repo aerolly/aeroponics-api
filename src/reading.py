@@ -22,7 +22,7 @@ def sprayLower():
       }
     }))
 
-    time.sleep(3)
+    time.sleep(2)
 
     r.publish('scheduler', json.dumps({
       'command': 'controller',
@@ -44,7 +44,7 @@ def sprayUpper():
       }
     }))
 
-    time.sleep(3)
+    time.sleep(4)
 
     r.publish('scheduler', json.dumps({
       'command': 'controller',
@@ -66,7 +66,7 @@ def pump():
       }
     }))
 
-    time.sleep(10)
+    time.sleep(45)
 
     r.publish('scheduler', json.dumps({
       'command': 'controller',
