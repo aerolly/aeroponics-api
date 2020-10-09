@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 from flask import Flask, request
 from flask_restful import Resource, Api
 from flask_cors import CORS
@@ -7,14 +6,12 @@ import redis
 import os
 import threading
 import simplejson as json
-import psycopg2
 import time
-from psycopg2.extras import RealDictCursor
+import psql_utility as ps
 
 import settings
 
 
-load_dotenv()
 
 # Connect to redis server
 r = redis.Redis(host=os.getenv('REDIS_IP'), port=os.getenv('REDIS_PORT'), db=0)
@@ -22,13 +19,6 @@ r = redis.Redis(host=os.getenv('REDIS_IP'), port=os.getenv('REDIS_PORT'), db=0)
 # Create redis pubsub object
 p = r.pubsub(ignore_subscribe_messages=True)
 
-# Connect to postgres with driver
-conn = psycopg2.connect(
-         user = os.environ.get('SQL_USER'),
-         password = os.environ.get('SQL_PASS'),
-         host = os.environ.get('SQL_IP'),
-         port = os.environ.get('SQL_PORT'),
-         database = os.environ.get('SQL_DB'))
 
 # Define flask server
 app = Flask(__name__)
@@ -55,39 +45,16 @@ def parseNumber(number):
   except ValueError as error:
     return number
 
-############################################################
-# DB Query Functions
-############################################################
-
-# General DB View function
-def getResultSetFromDB(funcName, params):
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.callproc(funcName, params)
-        result = json.dumps(cursor.fetchall())
-        cursor.close()
-        return result
-
-
-# Modify function
-def modifyDB(funcName, params):
-    with conn, conn.cursor(cursor_factory=RealDictCursor) as cursor:
-        cursor.callproc(funcName, params)
-        result=json.dumps(cursor.fetchall())
-
-    # Return status and error message
-    return result
-
-#############################################################
 
 # Endpoint definitions
 
 class Sensor(Resource):
   def get(self):
-    return getResultSetFromDB('"Device".view_availablesensors' , [])
+    return ps.getResultSetFromDB('"Device".view_availablesensors' , [])
 
 class Controller(Resource):
   def get(self):
-    return getResultSetFromDB('"Device".view_availablecontrollers' , [])
+    return ps.getResultSetFromDB('"Device".view_availablecontrollers' , [])
 
 class Command(Resource):
   # Send a command to be scheduled
