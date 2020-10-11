@@ -73,6 +73,8 @@ while True:
             for child in children:
                 try:
                     os.kill(child, 9)
+                except:
+                    pass
 
             break
 
@@ -82,6 +84,8 @@ while True:
         for child in children:
             try:
                 os.kill(child, 9)
+            except:
+                pass
 
         # sleep until 4:00 AM
         sleep(dtu.secondsBeforeTime(4))
