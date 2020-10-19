@@ -101,17 +101,17 @@ while True:
             print(f"sleeping for: {dtu.secondsBeforeTime(4)} seconds")
             time.sleep(dtu.secondsBeforeTime(4))
 
-        except KeyboardInterrupt:
-            print('Keyboard Interrupt... Shutting down.')
+    except KeyboardInterrupt:
+        print('Keyboard Interrupt... Shutting down.')
 
-            for child in children:
-                try:
-                    print(f"at: {datetime.datetime.now()}")
-                    print("killing: " + child)
-                    os.kill(child, 9)
-                except:
-                    print(f"failed to kill child: {child}")
-            sys.exit()
+        for child in children:
+            try:
+                print(f"at: {datetime.datetime.now()}")
+                print("killing: " + child)
+                os.kill(child, 9)
+            except:
+                print(f"failed to kill child: {child}")
+        sys.exit()
 
 
                 
