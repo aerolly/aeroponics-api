@@ -28,7 +28,7 @@ conn = psycopg2.connect(
 def getResultSetFromDB(funcName, params):
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.callproc(funcName, params)
-        result = json.dumps(cursor.fetchall(),indent=2, default=str)
+        result = json.dumps(cursor.fetchall(), default=str)
         cursor.close()
         return result
 
@@ -38,7 +38,7 @@ def getResultSetFromDBNoJS(funcName, params):
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.callproc(funcName, params)
         # Convert from RealDict => json => Python list
-        result = json.dumps(cursor.fetchall(),indent=2, default=str)
+        result = json.dumps(cursor.fetchall(), default=str)
         result = json.loads(result)
         cursor.close()
         return result
