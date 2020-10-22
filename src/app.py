@@ -15,8 +15,6 @@ import settings
 
 
 if __name__ == '__main__':
-  load_dotenv()
-
   # Connect to redis server
   r = redis.Redis(host=os.getenv('REDIS_IP'), port=os.getenv('REDIS_PORT'), db=0)
 
