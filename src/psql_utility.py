@@ -26,21 +26,18 @@ conn = psycopg2.connect(
 
 # General DB View function
 def getResultSetFromDB(funcName, params):
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.callproc(funcName, params)
-        result = json.dumps(cursor.fetchall(), default=str)
-        cursor.close()
+        with conn, conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.callproc(funcName, params)
+            result = json.dumps(cursor.fetchall(), default=str)
         return result
 
 
 # View without js encoding
 def getResultSetFromDBNoJS(funcName, params):
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.callproc(funcName, params)
-        # Convert from RealDict => json => Python list
-        result = json.dumps(cursor.fetchall(), default=str)
-        result = json.loads(result)
-        cursor.close()
+        with conn, conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.callproc(funcName, params)
+            # Convert from RealDict => json => Python list
+            result = json.loads(json.dumps(cursor.fetchall(), default=str))
         return result
 
 # Modify function
