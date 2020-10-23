@@ -17,7 +17,7 @@ def sprayLower():
     r.publish('scheduler', json.dumps({
       'command': 'controller',
       'options': {
-        'key': 'lowerBed-solenoid',
+        'key': 'genesis-lowerBed-solenoid',
         'action': 1,
         'waitTime': 10
       }
@@ -30,7 +30,7 @@ def sprayUpper():
     r.publish('scheduler', json.dumps({
       'command': 'controller',
       'options': {
-        'key': 'upperBed-solenoid',
+        'key': 'genesis-upperBed-solenoid',
         'action': 1,
         'waitTime': 10
       }
@@ -43,7 +43,7 @@ def pump():
     r.publish('scheduler', json.dumps({
       'command': 'controller',
       'options': {
-        'key': 'system-pump',
+        'key': 'genesis-system-pump',
         'action': 1,
         'waitTime': 30
       }
@@ -144,14 +144,14 @@ def takeData():
   temp = json.dumps({
     'command': 'sensor',
     'options': {
-      'key': 'pressure',
+      'key': 'genesis-system-pressure',
     }
   })
 
   pressure = json.dumps({
     'command': 'sensor',
     'options': {
-      'key': 'temperature',
+      'key': 'genesis-lowerBed-temperature',
     }
   })
 
