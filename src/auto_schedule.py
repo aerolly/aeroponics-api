@@ -24,12 +24,6 @@ def handleSchedulerJob(deviceID):
 
     # Query handles time info, run until stop time (query returns nothing)
     while schedulerInfo:
-        autoMode = r.get('autoMode').decode('utf-8')
-        if autoMode == '0':
-            while not autoMode:
-                time.sleep(1)
-                autoMode = r.get('autoMode').decode('utf-8')
-        
         # for jobs that rely on a sensor's value
         if schedulerInfo[0]['SchedulerSecondsToKeepActive'] is None:
             curSensorInfo = ps.getResultSetFromDBNoJS('"Device".view_mostrecentsensordata', [schedulerInfo[0]['SchedulerSensorToCheckID']])
@@ -42,18 +36,18 @@ def handleSchedulerJob(deviceID):
                 }
                 }))
 
-            # wait until sensor meets turn off condition
-            while curSensorInfo[0]['SensorReading'] <= schedulerInfo[0]['SchedulerSensorDeactivateValue']:
-                time.sleep(5)
-                curSensorInfo = ps.getResultSetFromDBNoJS('"Device".view_mostrecentsensordata', [schedulerInfo[0]['SchedulerSensorToCheckID']])
+                # wait until sensor meets turn off condition
+                while curSensorInfo[0]['SensorReading'] <= schedulerInfo[0]['SchedulerSensorDeactivateValue']:
+                    time.sleep(5)
+                    curSensorInfo = ps.getResultSetFromDBNoJS('"Device".view_mostrecentsensordata', [schedulerInfo[0]['SchedulerSensorToCheckID']])
 
-            r.publish('scheduler', json.dumps({
-            'command': schedulerInfo[0]['DeviceType'],
-            'options': {
-                'key': schedulerInfo[0]['RedisKey'],
-                'action': 0,
-            }
-            }))
+                r.publish('scheduler', json.dumps({
+                'command': schedulerInfo[0]['DeviceType'],
+                'options': {
+                    'key': schedulerInfo[0]['RedisKey'],
+                    'action': 0,
+                }
+                }))
 
         # for jobs that rely on a timer
         else:
@@ -68,6 +62,17 @@ def handleSchedulerJob(deviceID):
             }
             }))
             time.sleep(schedulerInfo[0]['SchedulerSecondsBetweenActivation'])
+
+        # Refresh scheduler info
+        schedulerInfo = ps.getResultSetFromDBNoJS('"Device".view_schedulerinfo_single', [deviceID])
+
+        # sleep if not auto mode
+        autoMode = r.get('autoMode').decode('utf-8')
+        if autoMode == '0':
+            while not autoMode:
+                time.sleep(1)
+                autoMode = r.get('autoMode').decode('utf-8')
+        
 
 
 while True:
