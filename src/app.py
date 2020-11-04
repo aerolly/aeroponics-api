@@ -10,8 +10,11 @@ import time
 import sys
 import traceback
 import psql_utility as ps
+import sendMail as sm
 
 import settings
+
+
 
 
 if __name__ == '__main__':
@@ -32,6 +35,28 @@ if __name__ == '__main__':
 
   # Define socket io server
   socketio = SocketIO(app, cors_allowed_origins='*')
+
+  # Send email if rpi not connectable
+  def rpiConnectCheck():
+    rpi_ip = os.getenv('RPI_IP')
+
+    disconnectMsg = 'Subject: Unable To Connect To RPI\n\nHEEEEEEEEEEEEEEEEEEEEELP'
+    reconnectMsg = 'Subject: Connection reestablished to RPI\n\n\nnvm'
+
+    while True:
+      response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
+      if response != 0:
+        # two prevent duds, must be two missed packets in a row
+        time.sleep(10)
+        response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
+        if response != 0:
+          sm.sendDevMail(disconnectMsg)
+          while response != 0:
+            time.sleep(10)
+            response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
+          sm.sendDevMail(reconnectMsg)
+      else:
+        time.sleep(10)
 
   # Server to client communication endpoint
   @socketio.on('')
@@ -125,12 +150,15 @@ if __name__ == '__main__':
       time.sleep(1)
   try:
     redisData = threading.Thread(target=handleRedisData)
+    rpiConnStatus = threading.Thread(target=rpiConnectCheck)
 
+    rpiConnStatus.start()
     redisData.start()
 
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
 
     redisData.join()
+    rpiConnStatus.join()
   except KeyboardInterrupt:
     print("Shutdown requested...exiting")
   except Exception:
