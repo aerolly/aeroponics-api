@@ -48,6 +48,8 @@ def handleSchedulerJob(deviceID):
                     'action': 0,
                 }
                 }))
+            else:
+                time.sleep(20)
 
         # for jobs that rely on a timer
         else:
