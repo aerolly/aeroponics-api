@@ -24,23 +24,57 @@ def handleSchedulerJob(deviceID):
 
     # Query handles time info, run until stop time (query returns nothing)
     while schedulerInfo:
+        # for jobs that rely on a sensor's value
+        if schedulerInfo[0]['SchedulerSecondsToKeepActive'] is None:
+            curSensorInfo = ps.getResultSetFromDBNoJS('"Device".view_mostrecentsensordata', [schedulerInfo[0]['SchedulerSensorToCheckID']])
+            if curSensorInfo[0]['SensorReading'] <= schedulerInfo[0]['SchedulerSensorActivationValue']:
+                r.publish('scheduler', json.dumps({
+                'command': schedulerInfo[0]['DeviceType'],
+                'options': {
+                    'key': schedulerInfo[0]['RedisKey'],
+                    'action': 1,
+                }
+                }))
+
+                # wait until sensor meets turn off condition
+                while curSensorInfo[0]['SensorReading'] <= schedulerInfo[0]['SchedulerSensorDeactivateValue']:
+                    time.sleep(5)
+                    curSensorInfo = ps.getResultSetFromDBNoJS('"Device".view_mostrecentsensordata', [schedulerInfo[0]['SchedulerSensorToCheckID']])
+
+                r.publish('scheduler', json.dumps({
+                'command': schedulerInfo[0]['DeviceType'],
+                'options': {
+                    'key': schedulerInfo[0]['RedisKey'],
+                    'action': 0,
+                }
+                }))
+            else:
+                time.sleep(20)
+
+        # for jobs that rely on a timer
+        else:
+            print(f"at: {datetime.datetime.now()}")
+            print("executing the following:\n" +json.dumps(schedulerInfo,indent=2))
+            r.publish('scheduler', json.dumps({
+            'command': schedulerInfo[0]['DeviceType'],
+            'options': {
+                'key': schedulerInfo[0]['RedisKey'],
+                'action': 1,
+                'waitTime': schedulerInfo[0]['SchedulerSecondsToKeepActive']
+            }
+            }))
+            time.sleep(schedulerInfo[0]['SchedulerSecondsBetweenActivation'])
+
+        # Refresh scheduler info
+        schedulerInfo = ps.getResultSetFromDBNoJS('"Device".view_schedulerinfo_single', [deviceID])
+
+        # sleep if not auto mode
         autoMode = r.get('autoMode').decode('utf-8')
         if autoMode == '0':
             while not autoMode:
                 time.sleep(1)
                 autoMode = r.get('autoMode').decode('utf-8')
-
-        print(f"at: {datetime.datetime.now()}")
-        print("executing the following:\n" +json.dumps(schedulerInfo,indent=2))
-        r.publish('scheduler', json.dumps({
-        'command': schedulerInfo[0]['DeviceType'],
-        'options': {
-            'key': schedulerInfo[0]['RedisKey'],
-            'action': 1,
-            'waitTime': schedulerInfo[0]['SchedulerSecondsToKeepActive']
-        }
-        }))
-        time.sleep(schedulerInfo[0]['SchedulerSecondsBetweenActivation'])
+        
 
 
 while True:
