@@ -16,8 +16,11 @@ def sendDevMail(msg):
     context = ssl.create_default_context()
 
     with smtplib.SMTP_SSL(host, port, context=context) as server:
-        server.login(user, password)
-        server.sendmail(user, user, msg)
-        server.quit()
+        try:
+            server.login(user, password)
+            server.sendmail(user, user, msg)
+            server.quit()
+        except:
+            print('error sending email')
 
 
