@@ -47,7 +47,7 @@ if __name__ == '__main__':
       response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
       if response != 0:
         # two prevent duds, must be two missed packets in a row
-        time.sleep(10)
+        time.sleep(1)
         response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
         if response != 0:
           sm.sendDevMail(disconnectMsg)
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     rpiConnStatus.start()
     redisData.start()
 
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=False)
 
     redisData.join()
     rpiConnStatus.join()
