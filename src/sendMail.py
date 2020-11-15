@@ -18,5 +18,6 @@ def sendDevMail(msg):
     with smtplib.SMTP_SSL(host, port, context=context) as server:
         server.login(user, password)
         server.sendmail(user, user, msg)
+        server.quit()
 
 
