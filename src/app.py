@@ -19,7 +19,12 @@ import settings
 
 if __name__ == '__main__':
   # Connect to redis server
-  r = redis.Redis(host=os.getenv('REDIS_IP'), port=os.getenv('REDIS_PORT'), db=0)
+  r = redis.Redis(
+    host=os.getenv('REDIS_IP'),
+    port=os.getenv('REDIS_PORT'),
+    db=0,
+    socket_timeout=3
+    )
 
   # Create redis pubsub object
   p = r.pubsub(ignore_subscribe_messages=True)
@@ -147,6 +152,10 @@ if __name__ == '__main__':
           send_data(msg)
         except UnicodeError:
           print('Error decoding Redis message')
+        except redis.exceptions.TimeoutError:
+          print('Redis connection timed out')
+        except redis.exceptions.ConnectionError:
+          print('Could not establish Redis connection')
       time.sleep(1)
   try:
     redisData = threading.Thread(target=handleRedisData)
