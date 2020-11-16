@@ -23,7 +23,7 @@ if __name__ == '__main__':
     host=os.getenv('REDIS_IP'),
     port=os.getenv('REDIS_PORT'),
     db=0,
-    socket_timeout=3
+    socket_connect_timeout=3
     )
 
   # Create redis pubsub object
