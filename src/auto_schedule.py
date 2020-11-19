@@ -37,9 +37,13 @@ def handleSchedulerJob(deviceID):
                 }))
 
                 # wait until sensor meets turn off condition
+                count = 0
                 while curSensorInfo[0]['SensorReading'] <= schedulerInfo[0]['SchedulerSensorDeactivateValue']:
                     time.sleep(5)
                     curSensorInfo = ps.getResultSetFromDBNoJS('"Device".view_mostrecentsensordata', [schedulerInfo[0]['SchedulerSensorToCheckID']])
+                    count += 1
+                    if(count >= 5): # In case of errors, don't run for longer than 20 seconds
+                        break
 
                 r.publish('scheduler', json.dumps({
                 'command': schedulerInfo[0]['DeviceType'],
@@ -95,10 +99,12 @@ while True:
             for j in jobs:
                 executor.submit(handleSchedulerJob, j['SchedulerDeviceID'])
 
+        time.sleep(5)
+
         # sleep until 4:00 AM
-        print(f"at: {datetime.datetime.now()}")
-        print(f"sleeping for: {dtu.secondsBeforeTime(4)} seconds")
-        time.sleep(dtu.secondsBeforeTime(4))
+        # print(f"at: {datetime.datetime.now()}")
+        # print(f"sleeping for: {dtu.secondsBeforeTime(4)} seconds")
+        # time.sleep(dtu.secondsBeforeTime(4))
 
     except KeyboardInterrupt:
         print('Keyboard Interrupt... Shutting down.')
