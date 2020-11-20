@@ -170,16 +170,16 @@ def takeCam():
   camUp = json.dumps({
     'command': 'sensor',
     'options': {
-      'key': 'genesis-aboveLowerBed-camera',
-      'opt': 'camera3'
+      'key': 'genesis-aboveRightLowerBed-camera',
+      'opt': 'camera0'
     }
   })
 
   camLeft = json.dumps({
     'command': 'sensor',
     'options': {
-      'key': 'genesis-frontLeftLowerBed-camera',
-      'opt': 'camera0'
+      'key': 'genesis-aboveLeftLowerBed-camera',
+      'opt': 'camera2'
     }
   })
 
@@ -187,7 +187,7 @@ def takeCam():
     'command': 'sensor',
     'options': {
       'key': 'genesis-frontRightLowerBed-camera',
-      'opt': 'camera2'
+      'opt': 'camera4'
     }
   })
 
