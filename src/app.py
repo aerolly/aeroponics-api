@@ -49,19 +49,22 @@ if __name__ == '__main__':
     reconnectMsg = 'Subject: Connection reestablished to RPI\n\n\nnvm'
 
     while True:
-      response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
-      if response != 0:
-        # two prevent duds, must be two missed packets in a row
-        time.sleep(1)
+      try:
         response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
         if response != 0:
-          sm.sendDevMail(disconnectMsg)
-          while response != 0:
-            time.sleep(10)
-            response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
-          sm.sendDevMail(reconnectMsg)
-      else:
-        time.sleep(10)
+          # two prevent duds, must be two missed packets in a row
+          time.sleep(1)
+          response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
+          if response != 0:
+            sm.sendDevMail(disconnectMsg)
+            while response != 0:
+              time.sleep(10)
+              response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
+            sm.sendDevMail(reconnectMsg)
+        else:
+          time.sleep(10)
+      except:
+        print('Something went wrong checking connection')
 
   # Server to client communication endpoint
   @socketio.on('')
