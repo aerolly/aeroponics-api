@@ -5,6 +5,12 @@ import simplejson as json
 import time
 import sys
 import traceback
+import sentry_sdk
+
+import settings
+
+from sentry_sdk.integrations.flask import FlaskIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
 
 import utility.postgres_client as ps
 from utility.redis_client import r, p
@@ -19,9 +25,16 @@ from resources.controller import Controller
 from resources.sensor import Sensor
 from resources.system import System
 
-import settings
+from processes.redis_pubsub import handleRedisData
+from processes.connection_check import handleConnectionCheck
 
 if __name__ == '__main__':
+  sentry_sdk.init(
+    dsn=os.getenv('SENTRY_DSN'),
+    integrations=[FlaskIntegration(), RedisIntegration()],
+    traces_sample_rate=1.0
+  )
+
   # Define flask server
   app = Flask(__name__)
 
@@ -34,31 +47,6 @@ if __name__ == '__main__':
   # Define socket io server
   socketio = SocketIO(app, cors_allowed_origins='*')
 
-  # Send email if rpi not connectable
-  def rpiConnectCheck():
-    rpi_ip = os.getenv('RPI_IP')
-
-    disconnectMsg = 'Subject: Unable To Connect To RPI\n\nHEEEEEEEEEEEEEEEEEEEEELP'
-    reconnectMsg = 'Subject: Connection reestablished to RPI\n\n\nnvm'
-
-    while True:
-      try:
-        response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
-        if response != 0:
-          # two prevent duds, must be two missed packets in a row
-          time.sleep(1)
-          response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
-          if response != 0:
-            sm.sendDevMail(disconnectMsg)
-            while response != 0:
-              time.sleep(10)
-              response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
-            sm.sendDevMail(reconnectMsg)
-        else:
-          time.sleep(10)
-      except:
-        print('Something went wrong checking connection')
-
   # Server to client communication endpoint
   @socketio.on('')
   def send_data(data):
@@ -70,35 +58,9 @@ if __name__ == '__main__':
   api.add_resource(Command, '/command')
   api.add_resource(System, '/system')
 
-  # Loop until redis data arrives
-  def handleRedisData():
-    try:
-      p.subscribe('data')
-    except:
-      print('Could not subscribe')
-
-    while True:
-      for message in p.listen():
-        try:
-          msg = message['data'].decode('utf-8')
-          print('Received event.', msg)
-
-          payload = json.loads(msg)
-
-          r.set(payload['key'], payload['result'])
-          r.set('time', payload['time'])
-
-          send_data(msg)
-        except UnicodeError:
-          print('Error decoding Redis message')
-        except redis.exceptions.TimeoutError:
-          print('Redis connection timed out')
-        except redis.exceptions.ConnectionError:
-          print('Could not establish Redis connection')
-      time.sleep(1)
   try:
     redisData = threading.Thread(target=handleRedisData)
-    rpiConnStatus = threading.Thread(target=rpiConnectCheck)
+    rpiConnStatus = threading.Thread(target=handleConnectionCheck)
 
     rpiConnStatus.start()
     redisData.start()

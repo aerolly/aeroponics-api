@@ -1,7 +1,5 @@
 # Auto-scheduling script, sends commands to pi based on data in db
-import psql_utility as ps
 import concurrent.futures
-import datetime_utility as dtu
 import redis
 import os
 import sys
@@ -10,11 +8,10 @@ import simplejson as json
 import datetime
 import time
 
+import utility.datetime as dtu
+import utility.postgres_client as ps
 
-# Redis
-r = redis.Redis(host=os.getenv('REDIS_SERVER'), port=os.getenv('REDIS_PORT'), db=0)
-p = r.pubsub(ignore_subscribe_messages=True)
-
+from utility.redis_client import r, p
 
 def handleSchedulerJob(deviceID):
     schedulerInfo = ps.getResultSetFromDBNoJS('"Device".view_schedulerinfo_single', [deviceID])
