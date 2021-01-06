@@ -1,7 +1,3 @@
-from flask import Flask, request
-from flask_restful import Resource, Api
-from flask_cors import CORS
-from flask_socketio import SocketIO, emit
 import redis
 import os
 import threading
@@ -9,26 +5,23 @@ import simplejson as json
 import time
 import sys
 import traceback
-import psql_utility as ps
-import sendMail as sm
+
+import utility.postgres_client as ps
+from utility.redis_client import r, p
+
+from flask import Flask, request
+from flask_restful import Resource, Api
+from flask_cors import CORS
+from flask_socketio import SocketIO, emit
+
+from resources.command import Command
+from resources.controller import Controller
+from resources.sensor import Sensor
+from resources.system import System
 
 import settings
 
-
-
-
 if __name__ == '__main__':
-  # Connect to redis server
-  r = redis.Redis(
-    host=os.getenv('REDIS_IP'),
-    port=os.getenv('REDIS_PORT'),
-    db=0,
-    socket_connect_timeout=3
-    )
-
-  # Create redis pubsub object
-  p = r.pubsub(ignore_subscribe_messages=True)
-
   # Define flask server
   app = Flask(__name__)
 
@@ -70,63 +63,6 @@ if __name__ == '__main__':
   @socketio.on('')
   def send_data(data):
     socketio.emit('data', json.loads(data))
-
-
-  # Utility function to parse number if possible
-  def parseNumber(number):
-    try:
-      return float(number)
-    except ValueError as error:
-      return number
-
-
-  # Endpoint definitions
-
-  class Sensor(Resource):
-    def get(self):
-      return ps.getResultSetFromDB('"Device".view_availablesensors' , [])
-
-    def post(self):
-      data = json.loads(request.data.decode('utf-8'))
-      return ps.modifyDB('"Device"."Insert_SensorReading"', [data['id'], data['reading']])
-
-
-  class Controller(Resource):
-    def get(self):
-      return ps.getResultSetFromDB('"Device".view_availablecontrollers' , [])
-
-  class Command(Resource):
-    # Send a command to be scheduled
-    def post(self):
-      print(request.data)
-      r.publish('scheduler', request.data)
-      return 200
-
-  class System(Resource):
-    # Get value from the current system state
-    def get(self):
-      initialState = {}
-
-      for key in r.scan_iter("*"):
-        # delete the key
-        value = r.get(key).decode('utf-8')
-
-        initialState[key.decode('utf-8')] = parseNumber(value)
-
-      return initialState
-
-    # Set a value for the system state
-    def post(self):
-      data = json.loads(request.data)
-      r.set(data['key'], data['value'])
-
-      val = parseNumber(data['value'])
-
-      send_data(json.dumps({
-        'key': data['key'],
-        'result': val
-      }))
-      return 200
 
   # Define URL extension for each endpoint definition
   api.add_resource(Sensor, '/sensor')

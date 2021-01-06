@@ -5,21 +5,18 @@ from dotenv import load_dotenv
 import simplejson as json
 from psycopg2.extras import RealDictCursor
 
-load_dotenv()
-
+import settings
 
 ############################################################
 # Establish Connection Pool
 ############################################################
 
 pool = psycopg2.pool.ThreadedConnectionPool(1,10,
-        user = os.environ.get('SQL_USER'),
-        password = os.environ.get('SQL_PASS'),
-        host = os.environ.get('SQL_IP'),
-        port = os.environ.get('SQL_PORT'),
-        database = os.environ.get('SQL_DB'))
-
-
+    user = os.environ.get('SQL_USER'),
+    password = os.environ.get('SQL_PASS'),
+    host = os.environ.get('SQL_IP'),
+    port = os.environ.get('SQL_PORT'),
+    database = os.environ.get('SQL_DB'))
 
 ############################################################
 # DB Query Functions
@@ -34,7 +31,6 @@ def getResultSetFromDB(funcName, params):
     pool.putconn(conn)
     return result
 
-
 # View without js encoding
 def getResultSetFromDBNoJS(funcName, params):
     conn = pool.getconn()
@@ -45,7 +41,6 @@ def getResultSetFromDBNoJS(funcName, params):
     pool.putconn(conn)
     return result
 
-
 # Modify function
 def modifyDB(funcName, params):
     conn = pool.getconn()
@@ -55,7 +50,6 @@ def modifyDB(funcName, params):
     pool.putconn(conn)
     # Return status and error message
     return result
-
 
 # Call at end of application
 def closeDB():
