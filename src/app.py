@@ -34,6 +34,31 @@ if __name__ == '__main__':
   # Define socket io server
   socketio = SocketIO(app, cors_allowed_origins='*')
 
+  # Send email if rpi not connectable
+  def rpiConnectCheck():
+    rpi_ip = os.getenv('RPI_IP')
+
+    disconnectMsg = 'Subject: Unable To Connect To RPI\n\nHEEEEEEEEEEEEEEEEEEEEELP'
+    reconnectMsg = 'Subject: Connection reestablished to RPI\n\n\nnvm'
+
+    while True:
+      try:
+        response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
+        if response != 0:
+          # two prevent duds, must be two missed packets in a row
+          time.sleep(1)
+          response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
+          if response != 0:
+            sm.sendDevMail(disconnectMsg)
+            while response != 0:
+              time.sleep(10)
+              response = os.system(f"ping -c 1 -t 2 {rpi_ip}")
+            sm.sendDevMail(reconnectMsg)
+        else:
+          time.sleep(10)
+      except:
+        print('Something went wrong checking connection')
+
   # Server to client communication endpoint
   @socketio.on('')
   def send_data(data):
@@ -66,15 +91,22 @@ if __name__ == '__main__':
           send_data(msg)
         except UnicodeError:
           print('Error decoding Redis message')
+        except redis.exceptions.TimeoutError:
+          print('Redis connection timed out')
+        except redis.exceptions.ConnectionError:
+          print('Could not establish Redis connection')
       time.sleep(1)
   try:
     redisData = threading.Thread(target=handleRedisData)
+    rpiConnStatus = threading.Thread(target=rpiConnectCheck)
 
+    rpiConnStatus.start()
     redisData.start()
 
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=False)
 
     redisData.join()
+    rpiConnStatus.join()
   except KeyboardInterrupt:
     print("Shutdown requested...exiting")
   except Exception:
