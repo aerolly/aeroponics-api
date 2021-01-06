@@ -140,6 +140,11 @@ def pump():
 #schedule.every().day.at("17:45").do(sprayUpper)
 #schedule.every().day.at("00:05").do(sprayLower)
 
+# Camera stuff
+schedule.every().day.at("8:00").do(takeCam)
+schedule.every().day.at("12:00").do(takeCam)
+schedule.every().day.at("6:00").do(takeCam)
+
 def takeData():
   temp = json.dumps({
     'command': 'sensor',
@@ -155,10 +160,41 @@ def takeData():
     }
   })
 
+
   while True:
     r.publish('scheduler', temp)
     r.publish('scheduler', pressure)
-    time.sleep(5)
+    time.sleep(10)
+
+def takeCam():
+  camUp = json.dumps({
+    'command': 'sensor',
+    'options': {
+      'key': 'genesis-aboveRightLowerBed-camera',
+      'opt': 'camera0'
+    }
+  })
+
+  camLeft = json.dumps({
+    'command': 'sensor',
+    'options': {
+      'key': 'genesis-aboveLeftLowerBed-camera',
+      'opt': 'camera2'
+    }
+  })
+
+  camRight = json.dumps({
+    'command': 'sensor',
+    'options': {
+      'key': 'genesis-frontRightLowerBed-camera',
+      'opt': 'camera4'
+    }
+  })
+
+  r.publish('scheduler', camUp)
+  r.publish('scheduler', camLeft)
+  r.publish('scheduler', camRight)
+
 
 def scheduler():
   while True:
@@ -166,11 +202,13 @@ def scheduler():
     time.sleep(1)
 
 if __name__ == '__main__':
-  #handleSchedule = threading.Thread(target=scheduler)
+  handleSchedule = threading.Thread(target=scheduler)
   dataTake = threading.Thread(target=takeData)
 
   #handleSchedule.start()
   dataTake.start()
+  handleSchedule.start()
 
   #handleSchedule.join()
   dataTake.join()
+  handleSchedule.join()
