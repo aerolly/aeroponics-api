@@ -7,3 +7,4 @@ flask_socketio
 simplejson
 wheel
 psycopg2-binary
+sentry-sdk[flask]
