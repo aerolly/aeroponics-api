@@ -20,6 +20,8 @@ from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 
+from sentry_sdk import capture_exception
+
 from resources.command import Command
 from resources.controller import Controller
 from resources.sensor import Sensor
@@ -59,8 +61,8 @@ if __name__ == '__main__':
   api.add_resource(System, '/system')
 
   try:
-    redisData = threading.Thread(target=handleRedisData)
     rpiConnStatus = threading.Thread(target=handleConnectionCheck)
+    redisData = threading.Thread(target=handleRedisData)
 
     rpiConnStatus.start()
     redisData.start()
@@ -71,8 +73,9 @@ if __name__ == '__main__':
     rpiConnStatus.join()
   except KeyboardInterrupt:
     print("Shutdown requested...exiting")
-  except Exception:
-    traceback.print_exc(file=sys.stdout)
+  except Exception as e:
+    capture_exception(e)
   finally:
     ps.closeDB()
     sys.exit(0)
+
