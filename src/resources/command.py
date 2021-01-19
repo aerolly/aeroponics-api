@@ -1,3 +1,4 @@
+from flask import request
 from flask_restful import Resource
 from utility.redis_client import r
 
